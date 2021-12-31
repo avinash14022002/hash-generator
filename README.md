@@ -1,5 +1,8 @@
-# Hash Generator
+![21fc5700-ee19-11ea-9c83-d97ff68430af](https://user-images.githubusercontent.com/66490629/147833613-91b0f2af-05b4-457b-a0a5-ac3a096a9cc2.jpg)
 [![Android CI](https://github.com/avinash14022002/hash-generator/actions/workflows/android.yml/badge.svg)](https://github.com/avinash14022002/hash-generator/actions/workflows/android.yml)
+
+
+
 
 Hash generator is a crypto based android application which works on different hashing algorithms.
 - MD5
