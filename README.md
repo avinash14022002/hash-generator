@@ -1,2 +1,3 @@
 # hash-generator
-[![Android-master Actions Status](https://github.com/avinash14022002/hash-generator/workflows/android-master/badge.svg)](https://github.com/avinash14022002/hash-generator/actions)
+[![Android CI](https://github.com/avinash14022002/hash-generator/actions/workflows/android.yml/badge.svg)](https://github.com/avinash14022002/hash-generator/actions/workflows/android.yml)
+
