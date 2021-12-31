@@ -1,59 +1,118 @@
 package com.example.hashgenerator
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.ArrayAdapter
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import com.example.hashgenerator.databinding.FragmentHomeBinding
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [HomeFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class HomeFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
+    private val homeViewModel: HomeViewModel by viewModels()
+
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onResume() {
+        super.onResume()
+        val hashAlgorithm = resources.getStringArray(R.array.hash_algorithm)
+        val arrayAdapter = ArrayAdapter(requireContext(), R.layout.drop_down_item, hashAlgorithm)
+        binding.autoCompleteTextView.setAdapter(arrayAdapter)
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false)
+    ): View {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+
+        setHasOptionsMenu(true)
+
+
+
+        binding.generateButton.setOnClickListener {
+            onGenerateClick()
+        }
+        return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment HomeFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            HomeFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
+    private fun onGenerateClick() {
+        if (binding.plainText.text.isEmpty()) {
+            showSnackBar("Field Empty.")
+        } else {
+            lifecycleScope.launch {
+                applyAnimations()
+                navigateToSuccess(getHashData())
             }
+
+        }
+    }
+
+    private fun getHashData(): String {
+        val algorithm = binding.autoCompleteTextView.text.toString()
+        val plainText = binding.plainText.text.toString()
+        return homeViewModel.getHash(plainText, algorithm)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.home_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.clear_menu) {
+            binding.plainText.text.clear()
+            showSnackBar("Cleared")
+            return true
+        }
+        return true
+    }
+
+    private suspend fun applyAnimations() {
+        binding.generateButton.isClickable = false
+        binding.titleTextview.animate().alpha(0f).duration = 400L
+        binding.generateButton.animate().alpha(0f).duration = 400L
+        binding.textInputLayout.animate().alpha(0f).translationXBy(1200f).duration = 400L
+        binding.plainText.animate().translationXBy(-1200f).duration = 400L
+
+        delay(300)
+
+        binding.successBackground.animate().alpha(1f).duration = 600L
+        binding.successBackground.animate().rotationBy(720f).duration = 600L
+        binding.successBackground.animate().scaleXBy(900f).duration = 800L
+        binding.successBackground.animate().scaleY(900f).duration = 800L
+
+        delay(500)
+
+        binding.successImageView.animate().alpha(1f).duration = 1000L
+
+        delay(1500L)
+    }
+
+    private fun navigateToSuccess(hash: String) {
+        val directions = HomeFragmentDirections.actionHomeFragmentToSuccessFragment(hash)
+        findNavController().navigate(directions)
+    }
+
+    private fun showSnackBar(message: String) {
+        val snackBar = Snackbar.make(
+            binding.rootLayout,
+            message,
+            Snackbar.LENGTH_SHORT
+        )
+        snackBar.setAction("Okay") {}
+        snackBar.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.blue))
+        snackBar.show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
